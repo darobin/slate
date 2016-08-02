@@ -5,31 +5,27 @@ export default function (state) {
   const { document, selection } = state
   const texts = document.getTexts()
   const first = texts.first()
-  const second = texts.last()
   const range = selection.merge({
     anchorKey: first.key,
-    anchorOffset: 2,
-    focusKey: second.key,
-    focusOffset: 2
+    anchorOffset: first.length,
+    focusKey: first.key,
+    focusOffset: first.length
   })
 
   const next = state
     .transform()
     .moveTo(range)
-    .wrapInline('hashtag')
+    .insertInline({
+      type: 'hashtag',
+      isVoid: true
+    })
     .apply()
 
-  const two = next.document.getTexts().get(1)
-  const three = next.document.getTexts().get(2)
+  const updated = next.document.getTexts().last()
 
   assert.deepEqual(
     next.selection.toJS(),
-    range.merge({
-      anchorKey: two.key,
-      anchorOffset: 0,
-      focusKey: three.key,
-      focusOffset: three.length
-    }).toJS()
+    range.collapseToEndOf(updated).toJS()
   )
 
   return next
